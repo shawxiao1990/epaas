@@ -37,6 +37,13 @@ def get_token():
         except ValueError:
             # The Authorization header is either empty or has no token
             token_type = token = None
+    elif 'token' in request.args:
+        try:
+            token = request.args['token']
+            token_type = 'bearer'
+        except ValueError:
+            # The Authorization header is either empty or has no token
+            token_type = token = None
     else:
         token_type = token = None
 

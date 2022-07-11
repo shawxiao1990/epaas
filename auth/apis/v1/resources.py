@@ -8,8 +8,6 @@ from auth.apis.v1.errors import api_abort, ValidationError
 from auth.apis.v1.schemas import user_schema
 from auth.extensions import db
 from auth.models import User
-from auth.extensions import log
-import logging
 from flask import current_app
 
 #mylogger=log()
@@ -38,7 +36,7 @@ class AuthTokenAPI(MethodView):
         grant_type = request.form.get('grant_type')
         username = request.form.get('username')
         password = request.form.get('password')
-        current_app.logger.debug('bingjunx2')
+        #current_app.logger.debug(request.form)
         if grant_type is None or grant_type.lower() != 'password':
             return api_abort(code=400, message='The grant type must be password.')
 
@@ -49,9 +47,10 @@ class AuthTokenAPI(MethodView):
         token, expiration = generate_token(user)
 
         response = jsonify({
-            'access_token': token,
+            'data': {'token': token},
             'token_type': 'Bearer',
-            'expires_in': expiration
+            'expires_in': expiration,
+            'code': 20000
         })
         response.headers['Cache-Control'] = 'no-store'
         response.headers['Pragma'] = 'no-cache'
@@ -62,7 +61,10 @@ class UserAPI(MethodView):
     decorators = [auth_required]
 
     def get(self):
-        return jsonify(user_schema(g.current_user))
+        return jsonify({
+            'data': user_schema(g.current_user),
+            'code': 20000
+        })
 
 
 api_v1.add_url_rule('/', view_func=IndexAPI.as_view('index'), methods=['GET'])

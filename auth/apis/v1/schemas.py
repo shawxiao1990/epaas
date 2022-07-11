@@ -9,4 +9,6 @@ def user_schema(user):
         'self': url_for('.user', _external=True),
         'kind': 'User',
         'username': user.username,
+        'roles': user.roles,
+        'introduction': user.introduction
     }

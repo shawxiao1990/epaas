@@ -15,7 +15,8 @@ def fake_admin():
     admin = User(
         username='admin',
         name='Mima Kirigoe',
-        introduction='Um, l, Mima Kirigoe, had a fun time as a member of CHAM...'
+        introduction='Um, l, Mima Kirigoe, had a fun time as a member of CHAM...',
+        roles="admin"
     )
     admin.set_password('helloflask')
     db.session.add(admin)
