@@ -5,7 +5,12 @@ from flask import g, current_app, request
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
 from auth.apis.v1.errors import api_abort, invalid_token, token_missing
-from auth.models import User
+from auth.models import User, Role
+
+
+def get_roles():
+    roles = Role.query.all()
+    return roles
 
 
 def generate_token(user):

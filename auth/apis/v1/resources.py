@@ -5,12 +5,13 @@ from flask.views import MethodView
 from auth.apis.v1 import api_v1
 from auth.apis.v1.auth import auth_required, generate_token
 from auth.apis.v1.errors import api_abort, ValidationError
-from auth.apis.v1.schemas import user_schema
+from auth.apis.v1.schemas import user_schema, role_schema
 from auth.extensions import db
 from auth.models import User
 from flask import current_app
+import logging
 
-#mylogger=log()
+
 def get_item_body():
     data = request.get_json()
     body = data.get('body')
@@ -67,6 +68,17 @@ class UserAPI(MethodView):
         })
 
 
+class RoleAPI(MethodView):
+    decorators = [auth_required]
+
+    def get(self):
+        return jsonify({
+            'data': role_schema(),
+            'code': 20000
+        })
+
+
 api_v1.add_url_rule('/', view_func=IndexAPI.as_view('index'), methods=['GET'])
 api_v1.add_url_rule('/oauth/token', view_func=AuthTokenAPI.as_view('token'), methods=['POST'])
 api_v1.add_url_rule('/user', view_func=UserAPI.as_view('user'), methods=['GET'])
+api_v1.add_url_rule('/role', view_func=RoleAPI.as_view('role'), methods=['GET'])
