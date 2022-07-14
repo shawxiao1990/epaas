@@ -78,7 +78,20 @@ class RoleAPI(MethodView):
         })
 
 
+class EndpointAPI(MethodView):
+    decorators = [auth_required]
+
+    def get(self):
+        from auth.apis.v1.endpoint import endpoint_schema
+        current_app.logger.debug(endpoint_schema())
+        return jsonify({
+            'data': endpoint_schema(),
+            'code': 20000
+        })
+
+
 api_v1.add_url_rule('/', view_func=IndexAPI.as_view('index'), methods=['GET'])
 api_v1.add_url_rule('/oauth/token', view_func=AuthTokenAPI.as_view('token'), methods=['POST'])
 api_v1.add_url_rule('/user', view_func=UserAPI.as_view('user'), methods=['GET'])
 api_v1.add_url_rule('/role', view_func=RoleAPI.as_view('role'), methods=['GET'])
+api_v1.add_url_rule('/server/endpoint', view_func=EndpointAPI.as_view('endpoint'), methods=['GET'])

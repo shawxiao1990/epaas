@@ -36,9 +36,11 @@ def validate_token(token):
 def get_token():
     # Flask/Werkzeug do not recognize any authentication types
     # other than Basic or Digest, so here we parse the header by hand.
-    if 'Authorization' in request.headers:
+    if 'X-Token' in request.headers:
         try:
-            token_type, token = request.headers['Authorization'].split(None, 1)
+            #token_type, token = request.headers['Authorization'].split(None, 1)
+            token = request.headers['X-Token']
+            token_type = 'bearer'
         except ValueError:
             # The Authorization header is either empty or has no token
             token_type = token = None

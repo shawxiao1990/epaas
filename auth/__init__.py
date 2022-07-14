@@ -20,6 +20,7 @@ def create_app(config_name=None):
 
     app = Flask('auth')
     app.config.from_object(config[config_name])
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@127.0.0.1:3306/epaas'
 
     register_logger(app)
     register_extensions(app)

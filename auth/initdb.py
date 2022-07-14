@@ -49,7 +49,7 @@ def register_initdb_commands(app):
     def forge():
         """Generate fake data."""
         from auth.fakes import fake_admin
-        from auth.fakes import fake_role
+        from auth.fakes import fake_role, fake_endpoint, fake_server
 
         db.drop_all()
         db.create_all()
@@ -58,5 +58,8 @@ def register_initdb_commands(app):
         fake_admin()
         click.echo('Generating the roles...')
         fake_role()
-
+        click.echo('Generating the endpoints...')
+        fake_endpoint()
+        click.echo('Generating the servers...')
+        fake_server()
         click.echo('Done.')
