@@ -21,6 +21,8 @@ def create_app(config_name=None):
     app = Flask('auth')
     app.config.from_object(config[config_name])
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@127.0.0.1:3306/epaas'
+    app.config['CRYPTO_KEY'] = '1234567890123456'
+    app.config['CRYPTO_IV'] = '1234567890123456'
 
     register_logger(app)
     register_extensions(app)
@@ -31,7 +33,7 @@ def create_app(config_name=None):
 
 def register_extensions(app):
     db.init_app(app)
-    login_manager.init_app(app)
+    #login_manager.init_app(app)
 
 
 def register_logger(app):

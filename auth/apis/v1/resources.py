@@ -3,7 +3,7 @@ from flask import jsonify, request, current_app, url_for, g
 from flask.views import MethodView
 
 from auth.apis.v1 import api_v1
-from auth.apis.v1.auth import auth_required, generate_token
+from auth.apis.v1.auth import auth_required, generate_token, decrypt
 from auth.apis.v1.errors import api_abort, ValidationError
 from auth.apis.v1.schemas import user_schema, role_schema
 from auth.extensions import db
@@ -36,7 +36,8 @@ class AuthTokenAPI(MethodView):
     def post(self):
         grant_type = request.form.get('grant_type')
         username = request.form.get('username')
-        password = request.form.get('password')
+        password_crypt = request.form.get('password')
+        password = decrypt(password_crypt)
         #current_app.logger.debug(request.form)
         if grant_type is None or grant_type.lower() != 'password':
             return api_abort(code=400, message='The grant type must be password.')

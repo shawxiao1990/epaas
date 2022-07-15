@@ -6,6 +6,29 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSigna
 
 from auth.apis.v1.errors import api_abort, invalid_token, token_missing
 from auth.models import User, Role
+from auth.apis.v1 import api_v1
+from flask_login import logout_user, login_required
+from Crypto.Cipher import AES
+import base64
+
+
+# 填充函数
+def add_to_16(value):
+    while len(value.encode('utf-8')) % 16 != 0:
+        value += '\x00'   #  补全, 明文和key都必须是16的倍数
+    return value.encode('utf-8')
+
+
+# 解密
+def decrypt(en_str):
+    iv = current_app.config['CRYPTO_IV']
+    key = current_app.config['CRYPTO_KEY']
+    # 解密时必须重新构建aes对象
+    aes = AES.new(key=add_to_16(key), mode=AES.MODE_CBC, iv=iv.encode())
+    # 先把密文转换成字节型, 再解密, 最后把之前填充的'\x00' 去掉
+    decryptedstr = aes.decrypt(base64.decodebytes(en_str.encode(encoding='utf-8'))).decode().strip('\x00')
+    # decryptedstr = aes.decrypt(a2b_hex(en_str)).decode().strip('\x00') # 对应上面的hex编码
+    return decryptedstr
 
 
 def get_roles():
