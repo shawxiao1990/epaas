@@ -45,7 +45,7 @@ class Endpoint(db.Model, UserMixin):
 class Server(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(10))
-    ip = db.Column(db.String(20))
+    ip = db.Column(db.String(20), unique=True)
     roles = db.Column(db.String(30))
     endpoints = db.relationship('Endpoint', secondary=endpoint_server, back_populates='servers')
 
