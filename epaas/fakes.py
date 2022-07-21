@@ -5,9 +5,9 @@ import random
 from faker import Faker
 from sqlalchemy.exc import IntegrityError
 
-from auth.extensions import db
-from auth.models import User
-from auth.models import Role, Endpoint, Server
+from epaas.extensions import db
+from epaas.models import User
+from epaas.models import Role, Endpoint, Server
 
 fake = Faker()
 

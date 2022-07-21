@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import click
-from auth.extensions import db
-from auth.models import User
+from epaas.extensions import db
+from epaas.models import User
 
 
 def register_initdb_commands(app):
@@ -48,8 +48,8 @@ def register_initdb_commands(app):
     @app.cli.command()
     def forge():
         """Generate fake data."""
-        from auth.fakes import fake_admin
-        from auth.fakes import fake_role, fake_endpoint, fake_server
+        from epaas.fakes import fake_admin
+        from epaas.fakes import fake_role, fake_endpoint, fake_server
 
         db.drop_all()
         db.create_all()

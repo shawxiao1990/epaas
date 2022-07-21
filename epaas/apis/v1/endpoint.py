@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from auth.models import Endpoint, Server
+from epaas.models import Endpoint, Server
 
 
 def get_endpoints():

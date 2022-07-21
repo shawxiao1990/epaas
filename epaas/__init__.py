@@ -4,12 +4,12 @@ import click
 import logging
 from flask import Flask, render_template, request
 from flask_login import current_user
-from auth.extensions import login_manager
-from auth.settings import config
-from auth.initdb import register_initdb_commands
-from auth.extensions import db
-#from auth.extensions import migrate
-from auth.apis.v1 import api_v1
+from epaas.extensions import login_manager
+from epaas.settings import config
+from epaas.initdb import register_initdb_commands
+from epaas.extensions import db
+#from epaas.extensions import migrate
+from epaas.apis.v1 import api_v1
 import logging
 from flask.logging import default_handler
 
@@ -18,7 +18,7 @@ def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv('FLASK_CONFIG', 'development')
 
-    app = Flask('auth')
+    app = Flask('epaas')
     app.config.from_object(config[config_name])
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:password@127.0.0.1:3306/epaas'
     app.config['CRYPTO_KEY'] = '1234567890123456'

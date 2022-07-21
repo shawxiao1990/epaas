@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import url_for
-from auth.apis.v1.auth import get_roles
+from epaas.apis.v1.auth import get_roles
 
 def user_schema(user):
     return {

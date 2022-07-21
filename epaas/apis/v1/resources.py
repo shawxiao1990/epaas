@@ -2,12 +2,12 @@
 from flask import jsonify, request, current_app, url_for, g
 from flask.views import MethodView
 
-from auth.apis.v1 import api_v1
-from auth.apis.v1.auth import auth_required, generate_token, decrypt
-from auth.apis.v1.errors import api_abort, ValidationError
-from auth.apis.v1.schemas import user_schema, role_schema
-from auth.extensions import db
-from auth.models import User
+from epaas.apis.v1 import api_v1
+from epaas.apis.v1.auth import auth_required, generate_token, decrypt
+from epaas.apis.v1.errors import api_abort, ValidationError
+from epaas.apis.v1.schemas import user_schema, role_schema
+from epaas.extensions import db
+from epaas.models import User
 from flask import current_app
 import logging
 import demjson
@@ -84,7 +84,7 @@ class EndpointAPI(MethodView):
     decorators = [auth_required]
 
     def get(self):
-        from auth.apis.v1.endpoint import endpoint_schema
+        from epaas.apis.v1.endpoint import endpoint_schema
         current_app.logger.debug(endpoint_schema())
         return jsonify({
             'data': endpoint_schema(),
@@ -106,7 +106,7 @@ class ServerAPI(MethodView):
         endpoint = data.get('endpoint')
         roles = data.get('roles')
 
-        from auth.models import Endpoint, Server
+        from epaas.models import Endpoint, Server
         server = Server(
             name=name,
             ip=ip,
