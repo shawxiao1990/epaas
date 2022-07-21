@@ -2,7 +2,7 @@
 
 import click
 from epaas.extensions import db
-from epaas.models import User
+from epaas.models import User, Role
 
 
 def register_initdb_commands(app):
@@ -18,10 +18,10 @@ def register_initdb_commands(app):
         click.echo('Initialized database.')
 
     @app.cli.command()
-    @click.option('--username', prompt=True, help='The username used to login.')
-    @click.option('--password', prompt=True, hide_input=True,
-                  confirmation_prompt=True, help='The password used to login.')
-    def init(username, password):
+    # @click.option('--username', prompt=True, help='The username used to login.')
+    # @click.option('--password', prompt=True, hide_input=True,
+    #               confirmation_prompt=True, help='The password used to login.')
+    def init():
         """init admin, just for you."""
 
         click.echo('Initializing the database...')
@@ -29,18 +29,35 @@ def register_initdb_commands(app):
 
         admin = User.query.first()
         if admin is not None:
-            click.echo('The administrator already exists, updating...')
-            admin.username = username
-            admin.set_password(password)
+            click.echo('The administrator already exists, exit!')
         else:
             click.echo('Creating the temporary administrator account...')
             admin = User(
-                username=username,
+                username='admin',
                 name='Admin',
-                introduction='Anything about you.'
+                introduction='Anything about you.',
+                roles="admin"
             )
-            admin.set_password(password)
+            admin.set_password('password')
             db.session.add(admin)
+
+            click.echo('Creating the default roles...')
+
+            adminRole = Role(
+                name='admin',
+                description='Super Administrator. Have access to view all pages.'
+            )
+            editor = Role(
+                name='editor',
+                description='Normal Editor. Can see all pages except permission page.'
+            )
+            visitor = Role(
+                name='visitor',
+                description='Just a visitor. Can only see the home page and the document page.'
+            )
+            db.session.add(adminRole)
+            db.session.add(editor)
+            db.session.add(visitor)
 
         db.session.commit()
         click.echo('Done.')
@@ -48,14 +65,14 @@ def register_initdb_commands(app):
     @app.cli.command()
     def forge():
         """Generate fake data."""
-        from epaas.fakes import fake_admin
+        from epaas.fakes import fake_user
         from epaas.fakes import fake_role, fake_endpoint, fake_server
 
         db.drop_all()
         db.create_all()
 
         click.echo('Generating the administrator...')
-        fake_admin()
+        fake_user()
         click.echo('Generating the roles...')
         fake_role()
         click.echo('Generating the endpoints...')
