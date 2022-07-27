@@ -107,11 +107,20 @@ class ServerAPI(MethodView):
         roles = data.get('roles')
 
         from epaas.models import Endpoint, Server
+        endpoint_server = Endpoint.query.filter_by(name=endpoint).first()
+        if endpoint_server is None:
+            endpoint = Endpoint(
+                name=endpoint,
+                path=endpoint,
+                roles=roles
+            )
+            db.session.add(endpoint)
+            db.session.commit()
         server = Server(
             name=name,
             ip=ip,
             roles=roles,
-            endpoints=[Endpoint.query.filter_by(name=endpoint).first()]
+            endpoints=[endpoint_server]
         )
         db.session.add(server)
         db.session.commit()

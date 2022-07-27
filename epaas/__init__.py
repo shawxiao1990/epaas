@@ -5,7 +5,6 @@ import logging
 from flask import Flask, render_template, request
 from flask_login import current_user
 from epaas.extensions import login_manager
-from epaas.settings import config
 from epaas.initdb import register_initdb_commands
 from epaas.extensions import db
 from flask_migrate import Migrate
