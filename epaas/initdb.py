@@ -68,7 +68,6 @@ def register_initdb_commands(app):
         from epaas.fakes import fake_user
         from epaas.fakes import fake_role, fake_endpoint, fake_server
 
-        db.drop_all()
         db.create_all()
 
         click.echo('Generating the administrator...')
