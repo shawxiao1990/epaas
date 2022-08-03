@@ -7,6 +7,10 @@ name = "pypi"
 flask-migrate = "*"
 itsdangerous = "==2.0.0"
 demjson = "*"
+pexpect = "*"
+werkzeug = "==2.1.2"
+flask-sock = "*"
+paramiko = "*"
 
 [dev-packages]
 
