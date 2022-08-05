@@ -103,6 +103,8 @@ class ServerAPI(MethodView):
 
         ip = data.get('serverip')
         name = data.get('servername')
+        ssh_user = data.get('ssh_user')
+        password = data.get('password')
         endpoint = data.get('endpoint')
         roles = data.get('roles')
 
@@ -119,6 +121,8 @@ class ServerAPI(MethodView):
         server = Server(
             name=name,
             ip=ip,
+            ssh_user=ssh_user,
+            password=password,
             roles=roles,
             endpoints=[endpoint_server]
         )

@@ -1,33 +1,38 @@
 from pexpect import pxssh
 from flask import _app_ctx_stack
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, g
 from flask.views import MethodView
 from epaas.apis.v1 import api_v1
-from epaas.apis.v1.auth import auth_required, generate_token, decrypt
+from epaas.apis.v1.auth import auth_required, decrypt
 import paramiko
 from flask import current_app
 from flask_sock import Sock
 import time
+from epaas.models import User, Server
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
 
 class SSH:
-    def __init__(self):
+    def __init__(self, ip, user, password):
         self.ssh = None
+        self.ip = ip
+        self.user = user
+        self.password = password
 
-    def connect(self, ip, port, user, password):
+    def connect(self):
         self.ssh = pxssh.pxssh()
         try:
-            self.ssh.login(ip, user, password)
+            self.ssh.login(self.ip, self.user, self.password)
             return True
         except Exception as e:
             import sys
             print(sys.exc_info())
             return False
 
-    def get_ssh(self, ip, port, user, password):
+    def get_ssh(self):
         top = _app_ctx_stack.top
         if not hasattr(top, 'ssh_conn'):
-            top.ssh_conn = self.connect(ip, user, password)
+            top.ssh_conn = self.connect(self.ip, self.user, self.password)
         return top.ssh_conn
 
     def execute(self, command):
@@ -41,14 +46,17 @@ class SSH:
 
 
 class SshAPI(MethodView):
-    decorators = [auth_required]
-    ssh = SSH()
-    response = None
-    def get(self, ip):
+
+    @auth_required
+    def get(self):
+        print(g.current_user.username)
+        ip = request.args.get('ip', '', type=str)
+        user = request.args.get('ip', '', type=str)
+        password = request.args.get('ip', '', type=str)
+        ssh = SSH(ip, user, password)
         cmdline = request.args.get('cmd', '', type=str)
-        print('cmdline='+cmdline)
-        if self.ssh.connect(ip):
-            self.response = self.ssh.execute(cmdline)
+        if ssh.connect():
+            self.response = ssh.execute(cmdline)
             return jsonify(self.response)
         else:
             return None
@@ -91,20 +99,40 @@ class SSH_PARA(object):
     def read_ready(self):
         return self._chanel.recv_ready()
 
+    @staticmethod
+    def get_permission(token, host):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except (BadSignature, SignatureExpired):
+            return False
+        user = User.query.get(data['id'])
+        server = Server.query.filter_by(ip=host).first()
+        if user is None or server is None:
+            return False
+        # compare role between user and server
+        for user_role in user.roles.split(','):
+            for server_role in server.roles.split(','):
+                if user_role == server_role:
+                    return server
+        return False
 
 api_v1.add_url_rule('/server/cmdline', view_func=SshAPI.as_view('cmdline'), methods=['GET'])
 sockets = Sock()
 sockets.init_app(api_v1)
 
 
-@sockets.route('/server/socket')
-def echo(sockets, ip, port, user, password):
-    ssh = SSH_PARA(ip, port, user, password)
+@sockets.route('/server/socket/<string:token>/<string:ip>')
+def echo(sockets, token, ip):
+    server = SSH_PARA.get_permission(token, ip)
+    if not server:
+        sockets.send("you have no access permission")
+        return False
+    ssh = SSH_PARA(host=server.ip, port=22, user=server.ssh_user, password=decrypt(server.password))
     for i in range(2):
       recv = ssh.read()
       print(recv)
       sockets.send(recv)
-    count = 0
     while True:
         message = sockets.receive()
         if message is not None:
