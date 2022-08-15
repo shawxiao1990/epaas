@@ -51,3 +51,14 @@ class Server(db.Model, UserMixin):
     roles = db.Column(db.String(30))
     endpoints = db.relationship('Endpoint', secondary=endpoint_server, back_populates='servers')
 
+
+class App(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(10), unique=True)
+    description = db.Column(db.Text)
+    display_time = db.Column(db.Time)
+    docker_images = db.Column(db.JSON)
+    module_env = db.Column(db.JSON)
+    modulename = db.Column(db.JSON)
+    author = db.Column(db.String(20))
+

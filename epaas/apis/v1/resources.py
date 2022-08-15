@@ -11,6 +11,7 @@ from epaas.models import User
 from flask import current_app
 import logging
 import demjson
+import time
 
 
 def get_item_body():
@@ -138,9 +139,64 @@ class ServerAPI(MethodView):
         return response
 
 
+class AppAPI(MethodView):
+    decorators = [auth_required]
+
+    def get(self):
+        from epaas.apis.v1.app import applist_schema
+        title = request.args.get('title')
+        sort = request.args.get('sort')
+        page = request.args.get('page')
+        limit = request.args.get('limit')
+        author = request.args.get('author')
+        applist, length = applist_schema(title, sort, page, limit, author)
+        return jsonify({
+            'data': {
+                'total': length,
+                'items': applist
+            },
+            'code': 20000
+        })
+
+    def post(self):
+        raw_data = request.get_data()
+        data = demjson.decode(raw_data)
+
+        name = data.get('appname')
+        description = data.get('description')
+        display_time = time.localtime()
+        docker_images = data.get('imagename')
+        module_env = data.get('module_env')
+        modulename = data.get('modulename')
+        author = data.get('author')
+
+        from epaas.models import App
+        app = App(
+            name=name,
+            description=description,
+            display_time=display_time,
+            docker_images=docker_images,
+            module_env=module_env,
+            modulename=modulename,
+            author=author
+        )
+        db.session.add(app)
+        db.session.commit()
+
+        response = jsonify({
+            'data': 'succeed',
+            'code': 20000
+        })
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Pragma'] = 'no-cache'
+        return response
+
+
 api_v1.add_url_rule('/', view_func=IndexAPI.as_view('index'), methods=['GET'])
 api_v1.add_url_rule('/oauth/token', view_func=AuthTokenAPI.as_view('token'), methods=['POST'])
 api_v1.add_url_rule('/user', view_func=UserAPI.as_view('user'), methods=['GET'])
 api_v1.add_url_rule('/role', view_func=RoleAPI.as_view('role'), methods=['GET'])
 api_v1.add_url_rule('/server/endpoint', view_func=EndpointAPI.as_view('endpoint'), methods=['GET'])
 api_v1.add_url_rule('/server/create', view_func=ServerAPI.as_view('create'), methods=['POST'])
+api_v1.add_url_rule('/app/list', view_func=AppAPI.as_view('applist'), methods=['GET'])
+api_v1.add_url_rule('/app/create', view_func=AppAPI.as_view('appcreate'), methods=['POST'])
