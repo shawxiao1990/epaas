@@ -10,7 +10,7 @@ from flask_sock import Sock
 import time
 from epaas.models import User, Server
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
-
+import re
 
 class SSH:
     def __init__(self, ip, user, password):
@@ -51,8 +51,8 @@ class SshAPI(MethodView):
     def get(self):
         print(g.current_user.username)
         ip = request.args.get('ip', '', type=str)
-        user = request.args.get('ip', '', type=str)
-        password = request.args.get('ip', '', type=str)
+        user = request.args.get('user', '', type=str)
+        password = request.args.get('password', '', type=str)
         ssh = SSH(ip, user, password)
         cmdline = request.args.get('cmd', '', type=str)
         if ssh.connect():
@@ -70,7 +70,10 @@ class SSH_PARA(object):
         self.user = user
         self.password = password
         self.keyfile = keyfile
-        self._ssh = paramiko.SSHClient()
+        try:
+            self._ssh = paramiko.SSHClient()
+        except Exception as err:
+            return False, f"SSH 连接出现异常：{err}"
         self._ssh.load_system_host_keys()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         if self.password:
@@ -91,13 +94,25 @@ class SSH_PARA(object):
         self._chanel.resize_pty(width=cols, height=rows)
 
     def send(self, msg):
-        self._chanel.send(msg)
+        # chanel = self._ssh.invoke_shell(term='xterm')
+        try:
+            self._chanel.send(msg)
+        except Exception as err:
+            return False, f"SSH 执行出现其他异常：{err}"
 
     def read(self):
         return self._chanel.recv(10000).decode('utf-8')
 
     def read_ready(self):
         return self._chanel.recv_ready()
+
+    def send_command(self, command):
+        try:
+            stdin, stdout, stderr = self._ssh.exec_command(command)
+        except Exception as err:
+            return False, f"SSH 执行出现其他异常：{err}"
+
+        return stdin, stdout, stderr
 
     @staticmethod
     def get_permission(token, host):
@@ -122,23 +137,43 @@ sockets = Sock()
 sockets.init_app(api_v1)
 
 
-@sockets.route('/server/socket/<string:token>/<string:ip>')
-def echo(sockets, token, ip):
+@sockets.route('/server/socket/<string:token>/<string:ip>/<log>')
+def echo(sockets, token, ip, log):
     server = SSH_PARA.get_permission(token, ip)
     if not server:
         sockets.send("you have no access permission")
         return False
     ssh = SSH_PARA(host=server.ip, port=22, user=server.ssh_user, password=decrypt(server.password))
-    for i in range(2):
-      recv = ssh.read()
-      print(recv)
-      sockets.send(recv)
-    while True:
-        message = sockets.receive()
-        if message is not None:
-            # ssh.send(bytes(message, encoding='utf-8'))
-            ssh.send(message)
-            while not ssh.read_ready():
-                time.sleep(0.02)
-            recv = ssh.read()
-            sockets.send(recv)
+    if log == 'false':
+        for i in range(2):
+          recv = ssh.read()
+          print(recv)
+          sockets.send(recv)
+        while True:
+            message = sockets.receive()
+            if message is not None:
+                # ssh.send(bytes(message, encoding='utf-8'))
+                ssh.send(message)
+                while not ssh.read_ready():
+                    time.sleep(0.02)
+                recv = ssh.read()
+                # print('recv1', recv, 'recv2')
+                sockets.send(recv)
+            # 如果命令敲击回车符执行后，执行没有结束（命令行结尾提示符未出现），则循环读取通道中的输出
+            while not re.search(r"\$\s$|#\s$", recv) and re.search(r"\n", recv):
+                recv = ssh.read()
+                sockets.send(recv)
+    else:
+        stdin, stdout, stderr = ssh.send_command('bash test.sh')
+        # print('result1', ssh.send_command('bash test.sh'), 'result2')
+        while True:
+            stdout_line = stdout.readline()
+            stderr_line = stderr.readline()
+            if not stdout_line and not stderr_line:
+                # 发给前端关键字匹配成功与否
+                sockets.send('SUCCESS END DONE')
+                break
+            if stdout_line:
+                sockets.send(stdout_line)
+            if stderr_line:
+                sockets.send(stderr_line)
