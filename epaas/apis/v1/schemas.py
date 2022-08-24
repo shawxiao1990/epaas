@@ -11,7 +11,8 @@ def user_schema(user):
         'username': user.username,
         'name': user.name,
         'roles': user.roles,
-        'introduction': user.introduction
+        'introduction': user.introduction,
+        'avatar': user.avatar
     }
 
 

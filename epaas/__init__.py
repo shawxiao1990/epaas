@@ -22,7 +22,7 @@ def create_app(config_name=None):
     register_logger(app)
     register_extensions(app)
     register_initdb_commands(app)
-    app.register_blueprint(api_v1, url_prefix='/api/v1')
+    app.register_blueprint(api_v1, url_prefix='/epaas/api/v1')
     return app
 
 
