@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-import click
+#import click
 from flask import Flask, render_template, request
 from epaas.extensions import login_manager
 from epaas.initdb import register_initdb_commands

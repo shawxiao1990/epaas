@@ -1,14 +1,15 @@
-FROM harbor.bingjunx.com/image-base/centos-official:7.8.2003-python3
+FROM python:3.9-buster
 
 # install
-RUN pips install pipenv
+RUN pip3 install pipenv
 
-COPY /epaas /app/run
+COPY /epaas /app/epaas
 COPY /docker/entrypoint.sh /app/entrypoint.sh
-COPY /pipfile /app/pipfile
+COPY /Pipfile /app/pipfile
+COPY /Pipfile.lock /app/Pipfile.lock
 
 WORKDIR /app/
+#RUN export LC_ALL=en_US.utf8  && export LANG=en_US.utf8
+RUN pipenv install setuptools==57.5.0
 
-RUN pipenv install gunicorn && pipenv install
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["bash", "./entrypoint.sh"]
