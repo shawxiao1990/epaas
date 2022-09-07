@@ -1,0 +1,1 @@
+gunicorn --workers=1 --threads=1 --bind=0.0.0.0:5000 --timeout 1800 epaas:create_app
