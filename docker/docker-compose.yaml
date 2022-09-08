@@ -9,8 +9,10 @@ services:
         max-file: "10"
         max-size: "100m"
     environment:
-      - FLASK_ENV=production
-      - FLASK_APP=epaas
+      - FLASK_CONFIG=production
+      - CRYPTO_KEY=1234567890123456
+      - CRYPTO_IV=1234567890123456
+      - DATABASE_URL=mysql+pymysql://root:password@127.0.0.1:3306/epaas
     ports:
       - 5000:5000/tcp
     restart: always

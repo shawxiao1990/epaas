@@ -2,10 +2,11 @@ FROM python:3.9-buster
 
 # install
 RUN pip3 install pipenv
+RUN apt-get update && apt-get install -y vim
 
 COPY /epaas /app/epaas
 COPY /docker/entrypoint.sh /app/entrypoint.sh
-COPY /Pipfile /app/pipfile
+COPY /Pipfile /app/Pipfile
 COPY /Pipfile.lock /app/Pipfile.lock
 
 WORKDIR /app/

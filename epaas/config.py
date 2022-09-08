@@ -32,6 +32,8 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL', prefix + os.path.join(BASEDIR, 'data.db'))
+    CRYPTO_KEY = os.getenv('CRYPTO_KEY', '1234567890123456')
+    CRYPTO_IV = os.getenv('CRYPTO_IV', '1234567890123456')
 
 
 config = {

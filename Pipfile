@@ -16,6 +16,7 @@ setuptools = "==57.5.0"
 flask = "*"
 gunicorn = "*"
 pycrypto = "*"
+pymysql = "*"
 
 [dev-packages]
 

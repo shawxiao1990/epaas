@@ -24,7 +24,7 @@ def decrypt(en_str):
     iv = current_app.config['CRYPTO_IV']
     key = current_app.config['CRYPTO_KEY']
     # 解密时必须重新构建aes对象
-    aes = AES.new(key=add_to_16(key), mode=AES.MODE_CBC, iv=iv.encode())
+    aes = AES.new(key=add_to_16(key), mode=AES.MODE_CBC, IV=iv.encode())
     # 先把密文转换成字节型, 再解密, 最后把之前填充的'\x00' 去掉
     decryptedstr = aes.decrypt(base64.decodebytes(en_str.encode(encoding='utf-8'))).decode().strip('\x00')
     # decryptedstr = aes.decrypt(a2b_hex(en_str)).decode().strip('\x00') # 对应上面的hex编码
