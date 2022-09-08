@@ -9,6 +9,8 @@ services:
         max-file: "10"
         max-size: "100m"
     environment:
+      - PORT=5000
+      - FLASK_APP=epaas
       - FLASK_CONFIG=production
       - CRYPTO_KEY=1234567890123456
       - CRYPTO_IV=1234567890123456
