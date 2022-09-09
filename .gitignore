@@ -2,4 +2,3 @@
 data-dev.db
 .env
 __pycache__/
-migrations
